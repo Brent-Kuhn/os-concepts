@@ -42,6 +42,13 @@ sys_getpid(void)
 }
 
 int
+sys_getpinfo(void)
+{
+    // This function will copy this process' pstat data to a pointer provided
+    return 0;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;
@@ -53,6 +60,13 @@ sys_sbrk(void)
   if(growproc(n) < 0)
     return -1;
   return addr;
+}
+
+int
+sys_settickets(void)
+{
+    // Contains the code for setting a processes ticket value
+    return 0;
 }
 
 int
