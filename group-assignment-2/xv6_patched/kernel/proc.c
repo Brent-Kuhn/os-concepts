@@ -151,9 +151,13 @@ fork(void)
   np->parent = proc;
   *np->tf = *proc->tf;
 
-  np->tickets = proc->tickets;
-  np->pass = getminpass();
-
+  if(proc != 0){
+    np->tickets = proc->tickets;
+    np->pass = proc->tickets;
+  } else {
+    np->tickets = 10;
+    np->pass = 0;
+  }
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -265,6 +269,8 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *minp = NULL;
+  int stride = 0;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -276,21 +282,51 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
+      if(minp == NULL) {
+          minp = p;
+      } else if(p->pass < minp->pass) {
+        minp = p;
+      }
+    }
+
+    if(minp) {
+      if(minp->tickets != 10) {
+        panic("Bad tickets");
+      }
+
+      stride = 200 / minp->tickets;
+      minp->pass += stride;
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      proc = minp;
+      switchuvm(minp);
+      minp->state = RUNNING;
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
+
+      //stride = 200 / minp->tickets;
+      //if(minp->pass + stride < 0) {
+      //  // handle overflow
+      //  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      //    if(p->state != RUNNABLE)
+      //      continue;
+
+      //    p->pass -= 2000;
+      //  }
+
+      //} else {
+      //    minp->pass += stride;
+      //}
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       proc = 0;
     }
     release(&ptable.lock);
-
+    p = NULL;
+    minp = NULL;
   }
 }
 
@@ -382,7 +418,11 @@ wakeup1(void *chan)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
-      p->pass = getminpass();
+      if (proc != 0){
+        p->pass = proc->pass;
+      } else {
+        p->pass = 0;
+      }
     }
   }
 }
@@ -453,26 +493,4 @@ procdump(void)
     }
     cprintf("\n");
   }
-}
-
-int
-getminpass()
-{
-  struct proc *p;
-  int minpass = 2147483647;
-
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if(p->state != RUNNABLE) {
-      continue;
-    } else {
-      if(p->pass < minpass) {
-        minpass = p->pass;
-      }
-    }
-  }
-
-  if(minpass - 10 > 0) {
-    minpass -= 10;
-  }
-  return minpass;
 }
