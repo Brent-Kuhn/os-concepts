@@ -290,10 +290,6 @@ scheduler(void)
     }
 
     if(minp) {
-      if(minp->tickets != 10) {
-        panic("Bad tickets");
-      }
-
       stride = 200 / minp->tickets;
       minp->pass += stride;
 
