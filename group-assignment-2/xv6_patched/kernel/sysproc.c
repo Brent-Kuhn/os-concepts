@@ -5,6 +5,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "sysfunc.h"
+#include "pstat.h"
 
 int
 sys_fork(void)
@@ -39,13 +40,6 @@ int
 sys_getpid(void)
 {
   return proc->pid;
-}
-
-int
-sys_getpinfo(void)
-{
-    // This function will copy this process' pstat data to a pointer provided
-    return 0;
 }
 
 int

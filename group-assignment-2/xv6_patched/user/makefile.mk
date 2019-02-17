@@ -10,7 +10,8 @@ USER_PROGS := \
 	ln\
 	ls\
 	mkdir\
-	rm\
+	pstattest\
+   rm\
 	sh\
 	stressfs\
 	settickettest\
