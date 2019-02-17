@@ -65,8 +65,23 @@ sys_sbrk(void)
 int
 sys_settickets(void)
 {
-    // Contains the code for setting a processes ticket value
-    return 0;
+  // Contains the code for setting a processes ticket value
+  int tickets;
+
+  if(argint(0, &tickets) < 0) {
+    return -1;
+  }
+
+  if(tickets < 10 || tickets > 200) {
+    return -1;
+  }
+
+  if(tickets % 10 != 0) {
+    return -1;
+  }
+
+  proc->tickets = tickets;
+  return 0;
 }
 
 int

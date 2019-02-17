@@ -11,11 +11,15 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+// struct pstat pstable;
+
 static struct proc *initproc;
 
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
+
+int getminpass(void);
 
 static void wakeup1(void *chan);
 
@@ -67,6 +71,8 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+
+  p->tickets = 10;
 
   return p;
 }
@@ -144,6 +150,9 @@ fork(void)
   np->sz = proc->sz;
   np->parent = proc;
   *np->tf = *proc->tf;
+
+  np->tickets = proc->tickets;
+  np->pass = getminpass();
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -370,9 +379,12 @@ wakeup1(void *chan)
 {
   struct proc *p;
 
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
+      p->pass = getminpass();
+    }
+  }
 }
 
 // Wake up all processes sleeping on chan.
@@ -443,4 +455,24 @@ procdump(void)
   }
 }
 
+int
+getminpass()
+{
+  struct proc *p;
+  int minpass = 2147483647;
 
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->state != RUNNABLE) {
+      continue;
+    } else {
+      if(p->pass < minpass) {
+        minpass = p->pass;
+      }
+    }
+  }
+
+  if(minpass - 10 > 0) {
+    minpass -= 10;
+  }
+  return minpass;
+}
