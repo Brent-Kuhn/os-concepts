@@ -51,7 +51,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  int minPass = 2100000000;
+  int minPass = 2147483647;
   struct proc *pp;
   
   for(pp = ptable.proc; pp < &ptable.proc[NPROC]; pp++) {
@@ -59,7 +59,7 @@ found:
           minPass = pp->pass;
       }
   }
-  if(minPass == 2100000000) {
+  if(minPass == 2147483647) {
       minPass = 0;
   }
 
@@ -414,7 +414,7 @@ static void
 wakeup1(void *chan)
 {
   struct proc *p;
-  int minPass = 2100000000;
+  int minPass = 2147483647;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if(p->state == RUNNABLE && p->pass < minPass) {
@@ -422,7 +422,7 @@ wakeup1(void *chan)
       }
   }
 
-  if(minPass == 2100000000) {
+  if(minPass == 2147483647) {
       minPass = 0;
   }
 
