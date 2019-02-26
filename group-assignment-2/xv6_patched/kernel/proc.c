@@ -51,6 +51,18 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  int minPass = 2100000000;
+  struct proc *pp;
+  
+  for(pp = ptable.proc; pp < &ptable.proc[NPROC]; pp++) {
+      if(pp->state == RUNNABLE && pp->pass < minPass) {
+          minPass = pp->pass;
+      }
+  }
+  if(minPass == 2100000000) {
+      minPass = 0;
+  }
+
   release(&ptable.lock);
 
   // Allocate kernel stack if possible.
@@ -75,6 +87,7 @@ found:
   p->context->eip = (uint)forkret;
 
   p->tickets = 10;
+  p->pass = minPass;
 
   return p;
 }
@@ -155,7 +168,7 @@ fork(void)
 
   if(proc != 0){
     np->tickets = proc->tickets;
-    np->pass = proc->tickets;
+    np->pass = proc->pass;
   } else {
     np->tickets = 10;
     np->pass = 0;
@@ -279,6 +292,7 @@ scheduler(void)
     sti();
 
     // Loop over process table looking for process to run.
+    // We try to find the runnable process with the lowest pass value.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -292,7 +306,9 @@ scheduler(void)
     }
 
     if(minp) {
-      stride = 200 / minp->tickets;
+      // Calculate the stride value for the process and add it to
+      // its pass value
+      stride = 10000 / minp->tickets;
       minp->pass += stride;
 
       // Switch to chosen process.  It is the process's job
@@ -303,20 +319,6 @@ scheduler(void)
       minp->state = RUNNING;
       swtch(&cpu->scheduler, proc->context);
       switchkvm();
-
-      //stride = 200 / minp->tickets;
-      //if(minp->pass + stride < 0) {
-      //  // handle overflow
-      //  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      //    if(p->state != RUNNABLE)
-      //      continue;
-
-      //    p->pass -= 2000;
-      //  }
-
-      //} else {
-      //    minp->pass += stride;
-      //}
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
@@ -412,14 +414,23 @@ static void
 wakeup1(void *chan)
 {
   struct proc *p;
+  int minPass = 2100000000;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if(p->state == RUNNABLE && p->pass < minPass) {
+          minPass = p->pass;
+      }
+  }
+
+  if(minPass == 2100000000) {
+      minPass = 0;
+  }
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
-      if (proc != 0){
-        p->pass = proc->pass;
-      } else {
-        p->pass = 0;
+      if(p->pass < minPass - 1000) {
+        p->pass = minPass;
       }
     }
   }
@@ -496,16 +507,16 @@ procdump(void)
 int
 sys_getpinfo(void)
 {
-  int ps;
+  struct pstat *stats = { 0 };
   struct proc *p;
+  int procInt = 0;
   int i = 0;
 
-  if(argint(0, &ps) < 0) {
+  if(argint(0, &procInt) < 0) {
     return -1;
   }
 
-  struct pstat *stats;
-  stats = (struct pstat *)ps;
+  stats = (struct pstat *)procInt;
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
