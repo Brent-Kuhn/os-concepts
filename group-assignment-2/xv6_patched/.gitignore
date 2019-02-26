@@ -1,0 +1,8 @@
+*.o
+*.img
+*.out
+
+fs/
+
+bootother
+initcode
