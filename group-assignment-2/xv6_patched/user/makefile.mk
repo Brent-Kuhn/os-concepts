@@ -11,7 +11,8 @@ USER_PROGS := \
 	ls\
 	mkdir\
 	pstattest\
-   rm\
+    rm\
+    schedulertest\
 	sh\
 	stressfs\
 	settickettest\
