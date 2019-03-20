@@ -40,6 +40,8 @@ exec(char *path, char **argv)
       continue;
     if(ph.memsz < ph.filesz)
       goto bad;
+    // Print pid and virtual memory start and end positions
+    cprintf("pid: [%d] %d %d\n", proc->pid, sz, ph.va + ph.memsz);
     if((sz = allocuvm(pgdir, sz, ph.va + ph.memsz)) == 0)
       goto bad;
     if(loaduvm(pgdir, (char*)ph.va, ip, ph.offset, ph.filesz) < 0)

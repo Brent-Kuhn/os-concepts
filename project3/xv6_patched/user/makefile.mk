@@ -1,5 +1,6 @@
 
 # user programs
+# Add test.c to list of files for xv6 to have after compile
 USER_PROGS := \
 	cat\
 	echo\
@@ -14,6 +15,7 @@ USER_PROGS := \
 	sh\
 	stressfs\
 	tester\
+	test\
 	usertests\
 	wc\
 	zombie
