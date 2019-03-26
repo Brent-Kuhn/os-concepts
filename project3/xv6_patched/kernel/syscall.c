@@ -17,6 +17,11 @@
 int
 fetchint(struct proc *p, uint addr, int *ip)
 {
+  //Project3 change tell people not to look at zero
+  if(addr < PGSIZE && proc->pid > 1)
+  {
+    return -1;
+  }
   if(addr >= p->sz || addr+4 > p->sz)
     return -1;
   *ip = *(int*)(addr);
@@ -30,7 +35,11 @@ int
 fetchstr(struct proc *p, uint addr, char **pp)
 {
   char *s, *ep;
-
+  //Project3 change tell people not to look at zero
+  if(addr < PGSIZE && proc->pid > 1)
+  {
+    return -1;
+  }
   if(addr >= p->sz)
     return -1;
   *pp = (char*)addr;
@@ -58,6 +67,11 @@ argptr(int n, char **pp, int size)
   
   if(argint(n, &i) < 0)
     return -1;
+  //Project3 change tell people not to look at zero
+  if(i < PGSIZE && proc->pid > 1)
+  {
+    return -1;
+  }
   if((uint)i >= proc->sz || (uint)i+size > proc->sz)
     return -1;
   *pp = (char*)i;

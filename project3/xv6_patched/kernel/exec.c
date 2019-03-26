@@ -32,8 +32,8 @@ exec(char *path, char **argv)
     goto bad;
 
   // Load program into memory.
-  // sz should not = 0
-  sz = 0; // starting point: sz=0 (virt addr 0)
+  //Project3 sz should not = 0
+  sz = 4096; // starting point: sz=0 (virt addr 0)
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
