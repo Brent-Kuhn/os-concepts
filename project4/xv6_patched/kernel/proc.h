@@ -10,6 +10,9 @@
 #define SEG_TSS   6  // this process's task state
 #define NSEGS     7
 
+// Let people have the clone function
+int clone(void(*fcn)(void*), void *arg, void *stack);
+
 // Per-CPU state
 struct cpu {
   uchar id;                    // Local APIC ID; index into cpus[] below
