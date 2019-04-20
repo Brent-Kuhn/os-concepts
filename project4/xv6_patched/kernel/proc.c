@@ -475,7 +475,7 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
 
   acquire(&ptable.lock);
   np->state = RUNNABLE;
-  replease(&ptable.lock);
+  release(&ptable.lock);
   
   return pid;
 }
