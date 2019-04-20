@@ -36,12 +36,6 @@ int sys_join(void) {
     return 0;
 }
 
-
-int clone(void(*fcn)(void*), void *arg, void *stack) {
-
-    return 0;
-}
-
 int join(void **stack) {
     return 0;
 }
