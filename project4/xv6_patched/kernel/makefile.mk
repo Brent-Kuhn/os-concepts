@@ -11,6 +11,7 @@ KERNEL_OBJECTS := \
 	kalloc.o\
 	kbd.o\
 	lapic.o\
+	lock.o\
 	main.o\
 	mp.o\
 	picirq.o\
