@@ -449,9 +449,7 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
 
   // Allocate process.
   if((np = allocproc()) == 0)
-  return -1;
-
-  np->state = EMBRYO;
+    return -1;
 
   // Copy process state from p.
   np->pgdir = proc->pgdir;
@@ -469,6 +467,11 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
   np->cwd = idup(proc->cwd);
+
+  np->tf->esp = (uint)(stack+PGSIZE-4); // put esp to start of the stack
+  *((uint*)(np->tf->esp)) = (uint)arg; // put arg to function at the start of the stack
+  *((uint*)(np->tf->esp)-4) = 0xFFFFFFFF; // return to nowhere
+  np->tf->esp =(np->tf->esp) -4;
 
   pid = np->pid;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
