@@ -10,6 +10,24 @@
 
 int sys_clone(void) {
 
+    int fcn_addr = 0;
+    int arg_addr = 0;
+    int stack_addr = 0;
+    void(*fcn)(void*);
+    void *arg;
+    void *stack;
+
+    argint(0, &fcn_addr);
+    fcn = (void(*)(void*))fcn_addr;
+
+    argint(1, &arg_addr);
+    arg = (void*)arg_addr;
+
+    argint(2, &stack_addr);
+    stack = (void**)stack_addr;
+
+    clone(fcn, arg, stack);
+
     return 0;
 }
 
