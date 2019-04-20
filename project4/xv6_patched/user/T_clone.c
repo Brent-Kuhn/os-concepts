@@ -1,6 +1,7 @@
 /* clone and verify that address space is shared */
 #include "types.h"
 #include "user.h"
+#include "syscall.h"
 
 #undef NULL
 #define NULL ((void*)0)

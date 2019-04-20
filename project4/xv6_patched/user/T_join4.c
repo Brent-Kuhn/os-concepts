@@ -1,6 +1,7 @@
 /* join, not wait, should handle threads */
 #include "types.h"
 #include "user.h"
+#include "syscall.h"
 
 #undef NULL
 #define NULL ((void*)0)

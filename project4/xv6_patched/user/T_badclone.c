@@ -1,6 +1,7 @@
 /* clone with bad stack argument */
 #include "types.h"
 #include "user.h"
+#include "syscall.h"
 
 #undef NULL
 #define NULL ((void*)0)

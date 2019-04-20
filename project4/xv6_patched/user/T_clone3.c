@@ -3,6 +3,7 @@
 #include "user.h"
 #include "fcntl.h"
 #include "x86.h"
+#include "syscall.h"
 
 #undef NULL
 #define NULL ((void*)0)
