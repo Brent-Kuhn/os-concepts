@@ -2,6 +2,7 @@
 #include "types.h"
 #include "user.h"
 #include "syscall.h"
+#include "thread.h"
 
 #undef NULL
 #define NULL ((void*)0)
