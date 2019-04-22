@@ -514,6 +514,10 @@ int join(void **stack) {
   struct proc *p;
   int havekids, pid;
 
+  // make sure it's word aligned
+  if((uint)stack % 4 != 0)
+    return -1;
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for zombie children.
