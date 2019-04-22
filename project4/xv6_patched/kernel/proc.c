@@ -68,6 +68,9 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  // Is not a thread
+  p->isthread = 0;
+
   return p;
 }
 
@@ -190,6 +193,10 @@ exit(void)
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == proc){
+      if(p->isthread == 1){
+        p->kstack = 0;
+        p->state = UNUSED;
+      }
       p->parent = initproc;
       if(p->state == ZOMBIE)
         wakeup1(initproc);
@@ -221,7 +228,9 @@ wait(void)
       if(p->state == ZOMBIE){
         // Found one.
         pid = p->pid;
-        kfree(p->kstack);
+        if(p->isthread == 0){
+          kfree(p->kstack);
+        }
         p->kstack = 0;
         freevm(p->pgdir);
         p->state = UNUSED;
@@ -391,14 +400,25 @@ int
 kill(int pid)
 {
   struct proc *p;
+  struct proc *pc;
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       p->killed = 1;
+      for(pc = ptable.proc; pc < &ptable.proc[NPROC]; pc++){
+        if(pc->parent == p && pc->isthread == 1){
+          pc->killed = 1;
+          // Wake process from sleep if necessary.
+          if(pc->state == SLEEPING){
+            pc->state = RUNNABLE;
+          }
+        }
+      }
       // Wake process from sleep if necessary.
-      if(p->state == SLEEPING)
+      if(p->state == SLEEPING){
         p->state = RUNNABLE;
+      }
       release(&ptable.lock);
       return 0;
     }
@@ -450,6 +470,9 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   // Allocate process.
   if((np = allocproc()) == 0)
     return -1;
+
+  // Process is a thread
+  np->isthread = 1;
 
   // Copy process state from p.
   np->pgdir = proc->pgdir;
