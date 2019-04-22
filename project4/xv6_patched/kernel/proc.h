@@ -12,6 +12,7 @@
 
 // Let people have the clone function
 int clone(void(*fcn)(void*), void *arg, void *stack);
+int join(void**);
 
 // Per-CPU state
 struct cpu {

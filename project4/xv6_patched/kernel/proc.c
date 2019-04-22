@@ -510,4 +510,6 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   return pid;
 }
 
-
+int join(void **stack) {
+    return 0;
+}

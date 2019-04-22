@@ -31,9 +31,11 @@ int sys_clone(void) {
 
 int sys_join(void) {
 
-    return 0;
-}
+    int stack_addr = 0;
+    void** stack;
 
-int join(void **stack) {
-    return 0;
+    argint(0, &stack_addr);
+    stack = (void**)stack_addr;
+
+    return join(stack);
 }
