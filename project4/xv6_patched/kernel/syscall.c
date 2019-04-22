@@ -19,7 +19,9 @@ fetchint(struct proc *p, uint addr, int *ip)
 {
   if(addr >= p->sz || addr+4 > p->sz)
     return -1;
+  //cprintf("I am proc with pid: %d esp is: %x addr: %x\n", p->pid, p->tf->esp, addr);
   *ip = *(int*)(addr);
+  //cprintf("Read value %d\n", *ip);
   return 0;
 }
 

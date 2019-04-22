@@ -466,6 +466,20 @@ procdump(void)
 int clone(void(*fcn)(void*), void *arg, void *stack) {
   int i, pid;
   struct proc *np;
+  uint *ret_addr, *argument;
+
+
+  if((uint)stack % PGSIZE != 0) {
+      return -1;
+  }
+
+  if((uint)stack % 4 != 0) {
+      panic("Stack not word aligned!");
+  }
+
+  if(proc->sz - (uint)stack < PGSIZE) {
+      return -1;
+  }
 
   // Allocate process.
   if((np = allocproc()) == 0)
@@ -486,19 +500,28 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
-  for(i = 0; i < NOFILE; i++)
-    if(proc->ofile[i])
+
+  for(i = 0; i < NOFILE; i++) {
+    if(proc->ofile[i]) {
       np->ofile[i] = filedup(proc->ofile[i]);
+      //cprintf("index %d descriptor : %x\n", i, np->ofile[i]);
+    }
+  }
   np->cwd = idup(proc->cwd);
 
   np->tf->esp = (uint)(stack+PGSIZE-4); // put esp to start of the stack
-  *((uint*)(np->tf->esp)) = (uint)arg; // put arg to function at the start of the stack
-  *((uint*)(np->tf->esp)-4) = 0xFFFFFFFF; // return to nowhere
-  np->tf->esp =(np->tf->esp) -4;
 
-  np->tf->ebp = np->tf->esp; // set ebp at the start of the stack
+  argument = (uint*)(np->tf->esp);
+  *argument = (uint)arg;
 
-  np->tf->eip = (int)fcn;
+  np->tf->esp -= 4;
+
+  ret_addr = (uint*)(np->tf->esp);
+  *ret_addr = 0xFFFFFFFF;
+
+  np->tf->ebp = (uint)(np->tf->esp); // set ebp at the start of the stack
+
+  np->tf->eip = (uint)fcn;
 
   pid = np->pid;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
@@ -507,6 +530,7 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   np->state = RUNNABLE;
   release(&ptable.lock);
   
+  //cprintf("Stack base %x, stack pointer %x, value there %d\n", stack + PGSIZE - 4, np->tf->esp, *(uint*)(np->tf->esp));
   return pid;
 }
 
