@@ -26,9 +26,7 @@ int sys_clone(void) {
     argint(2, &stack_addr);
     stack = (void**)stack_addr;
 
-    clone(fcn, arg, stack);
-
-    return 0;
+    return clone(fcn, arg, stack);
 }
 
 int sys_join(void) {

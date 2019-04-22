@@ -469,10 +469,13 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   np->cwd = idup(proc->cwd);
 
   np->tf->esp = (uint)(stack+PGSIZE-4); // put esp to start of the stack
-  np->tf->ebp = np->tf->esp; // set ebp at the start of the stack
   *((uint*)(np->tf->esp)) = (uint)arg; // put arg to function at the start of the stack
   *((uint*)(np->tf->esp)-4) = 0xFFFFFFFF; // return to nowhere
   np->tf->esp =(np->tf->esp) -4;
+
+  np->tf->ebp = np->tf->esp; // set ebp at the start of the stack
+
+  np->tf->eip = (int)fcn;
 
   pid = np->pid;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
