@@ -464,11 +464,12 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   np->tf->eax = 0;
 
   for(i = 0; i < NOFILE; i++)
-  if(proc->ofile[i])
+    if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
   np->cwd = idup(proc->cwd);
 
   np->tf->esp = (uint)(stack+PGSIZE-4); // put esp to start of the stack
+  np->tf->ebp = np->tf->esp; // set ebp at the start of the stack
   *((uint*)(np->tf->esp)) = (uint)arg; // put arg to function at the start of the stack
   *((uint*)(np->tf->esp)-4) = 0xFFFFFFFF; // return to nowhere
   np->tf->esp =(np->tf->esp) -4;
