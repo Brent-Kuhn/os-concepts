@@ -193,13 +193,14 @@ exit(void)
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == proc){
-      if(p->isthread == 1){
+      /*if(p->isthread == 1){
         p->kstack = 0;
         p->state = UNUSED;
-      }
+      }*/
       p->parent = initproc;
-      if(p->state == ZOMBIE)
+      if(p->state == ZOMBIE){
         wakeup1(initproc);
+      }
     }
   }
 
@@ -222,24 +223,22 @@ wait(void)
     // Scan through table looking for zombie children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != proc)
-        continue;
-      havekids = 1;
-      if(p->state == ZOMBIE){
-        // Found one.
-        pid = p->pid;
-        if(p->isthread == 0){
+      if(p->parent == proc && p->isthread == 0){
+        havekids = 1;
+        if(p->state == ZOMBIE){
+          // Found one.
+          pid = p->pid;
           kfree(p->kstack);
+          p->kstack = 0;
+          freevm(p->pgdir);
+          p->state = UNUSED;
+          p->pid = 0;
+          p->parent = 0;
+          p->name[0] = 0;
+          p->killed = 0;
+          release(&ptable.lock);
+          return pid;
         }
-        p->kstack = 0;
-        freevm(p->pgdir);
-        p->state = UNUSED;
-        p->pid = 0;
-        p->parent = 0;
-        p->name[0] = 0;
-        p->killed = 0;
-        release(&ptable.lock);
-        return pid;
       }
     }
 
@@ -535,5 +534,44 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
 }
 
 int join(void **stack) {
-    return 0;
+  struct proc *p;
+  int havekids, pid;
+
+  // make sure it's word aligned
+  if((uint)stack % 4 != 0)
+    return -1;
+
+  acquire(&ptable.lock);
+  for(;;){
+    // Scan through table looking for zombie children.
+    havekids = 0;
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent == proc && p->isthread == 1){
+        havekids = 1;
+        if (p->state == ZOMBIE) {
+          // get pid of zombie child to return
+          pid = p->pid;
+          *stack = p->kstack;
+          p->kstack = 0;
+          p->state = UNUSED;
+          p->pid = 0;
+          p->parent = 0;
+          p->name[0] = 0;
+          p->killed = 0;
+          // Get stack of the zombie child thread to return
+          release(&ptable.lock);
+          return pid;
+        }
+      }
+    }
+
+    // No point waiting if we don't have any children.
+    if(!havekids || proc->killed){
+      release(&ptable.lock);
+      return -1;
+    }
+
+    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
+    sleep(proc, &ptable.lock);  //DOC: wait-sleep
+  }
 }
