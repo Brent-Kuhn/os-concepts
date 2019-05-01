@@ -19,6 +19,9 @@ int thread_create(void (*start_routine)(void*), void *arg)
         stack = stack + (pgsz - (uint)stack % pgsz);
 
     int clone_pid = clone(start_routine, arg, (void *)stack);
+
+    free(stack);
+
     return clone_pid;
 }
 
