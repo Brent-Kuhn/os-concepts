@@ -24,7 +24,7 @@ int thread_create(void (*start_routine)(void*), void *arg)
 
 int thread_join()
 {
-     void *join_stack;
-     int join_pid = join(&join_stack);
-     return join_pid;
+    void *join_stack;
+    int join_pid = join(&join_stack);
+    return join_pid;
 }
