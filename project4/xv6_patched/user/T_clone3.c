@@ -37,6 +37,7 @@ main(int argc, char *argv[])
    int clone_pid = clone(worker, 0, stack);
    assert(clone_pid > 0);
    while(!newfd);
+   assert(newfd);
    assert(write(newfd, "goodbye\n", 8) == -1);
    printf(1, "TEST PASSED\n");
    exit();
