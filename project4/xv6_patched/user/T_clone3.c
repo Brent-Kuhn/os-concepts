@@ -33,14 +33,10 @@ main(int argc, char *argv[])
      stack = stack + (4096 - (uint)stack % PGSIZE);
 
    int fd = open("tmp", O_WRONLY|O_CREATE);
-   printf(1,"here2 fd = %d\n", fd);
    assert(fd == 3);
-   printf(1, "I am host with id %d\n", ppid);
    int clone_pid = clone(worker, 0, stack);
-   printf(1, "I am thead pid %d\n", clone_pid);
    assert(clone_pid > 0);
    while(!newfd);
-   printf(1, "I am going insane?\n");
    assert(write(newfd, "goodbye\n", 8) == -1);
    printf(1, "TEST PASSED\n");
    exit();
@@ -48,7 +44,6 @@ main(int argc, char *argv[])
 
 void
 worker(void *arg_ptr) {
-    printf(1, "test\n");
     assert(write(3, "hello\n", 6) == 6);
     xchg(&newfd, open("tmp2", O_WRONLY|O_CREATE));
     newfd = 5;

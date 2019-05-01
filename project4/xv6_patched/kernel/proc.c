@@ -465,7 +465,7 @@ procdump(void)
 int clone(void(*fcn)(void*), void *arg, void *stack) {
   int i, pid;
   struct proc *np;
-  uint *ret_addr, *argument;
+  uint *ret_addr, *argument, stacksize;
 
 
   if((uint)stack % PGSIZE != 0) {
@@ -510,9 +510,32 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
 
   np->tf->esp = (uint)(stack+PGSIZE-4); // put esp to start of the stack
 
+
+  // Copy stack
+  acquire(&ptable.lock); // lock required because of stack read
+  // Calculate the location of the stack by finding the page aligned offset from the sp
+  stacksize = (uint)proc->tf->esp + (PGSIZE - ((uint)proc->tf->esp % PGSIZE));
+  // Find the beginning of the stack by offsetting by sp
+  stacksize = stacksize - (uint)proc->tf->esp;
+  // Set the new processes stack pointer to the beginning of the copied stack
+  np->tf->esp = (uint)stack + PGSIZE - stacksize;
+  // set the base pointer to the original location of the ebp
+  np->tf->ebp = np->tf->esp + (proc->tf->ebp - proc->tf->esp);
+  // Copy the parents stack
+  if(copyout(np->pgdir,np->tf->esp,(void*)proc->tf->esp,stacksize)<0){
+    cprintf("stack copy fail\n");
+    return -1;
+  }
+  release(&ptable.lock);
+
+
+  // Put the argument on the stack
+  np->tf->esp -= 4;
+
   argument = (uint*)(np->tf->esp);
   *argument = (uint)arg;
 
+  // Put the fake return address on the stack
   np->tf->esp -= 4;
 
   ret_addr = (uint*)(np->tf->esp);
