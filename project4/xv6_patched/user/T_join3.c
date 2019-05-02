@@ -39,7 +39,7 @@ main(int argc, char *argv[])
    }
 
    else{
-      wait;
+      wait();
    }
 
    printf(1, "TEST PASSED\n");
