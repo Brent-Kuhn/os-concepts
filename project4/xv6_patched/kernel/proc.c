@@ -110,7 +110,8 @@ int
 growproc(int n)
 {
   uint sz;
-  
+  struct proc *p;
+
   sz = proc->sz;
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
@@ -120,6 +121,13 @@ growproc(int n)
       return -1;
   }
   proc->sz = sz;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if(p->parent == proc && p->isthread == 1 && p->state != UNUSED && p->state != ZOMBIE){
+       p->sz = sz;
+    }
+  }
+  release(&ptable.lock);
   switchuvm(proc);
   return 0;
 }
