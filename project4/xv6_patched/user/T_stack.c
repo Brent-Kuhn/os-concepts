@@ -32,7 +32,7 @@ main(int argc, char *argv[])
 
    int clone_pid = clone(worker, stack, stack);
    assert(clone_pid > 0);
-   assert(global == 5);
+   while(global != 5);
    printf(1, "TEST PASSED\n");
    exit();
 }
