@@ -34,6 +34,14 @@ main(int argc, char *argv[])
    int join_pid = join(&join_stack);
    assert(join_pid == -1);
 
+   if(fork_pid == 0) {
+      exit();
+   }
+
+   else{
+      wait;
+   }
+
    printf(1, "TEST PASSED\n");
    exit();
 }
