@@ -37,7 +37,6 @@ main(int argc, char *argv[])
    int clone_pid = clone(worker, 0, stack);
    assert(clone_pid > 0);
    while(!newfd);
-   assert(newfd);
    assert(write(newfd, "goodbye\n", 8) == -1);
    printf(1, "TEST PASSED\n");
    exit();
@@ -45,8 +44,7 @@ main(int argc, char *argv[])
 
 void
 worker(void *arg_ptr) {
-    assert(write(3, "hello\n", 6) == 6);
-    xchg(&newfd, open("tmp2", O_WRONLY|O_CREATE));
-    newfd = 5;
-    exit();
+   assert(write(3, "hello\n", 6) == 6);
+   xchg(&newfd, open("tmp2", O_WRONLY|O_CREATE));
+   exit();
 }

@@ -2,6 +2,7 @@
 #include "types.h"
 #include "user.h"
 #include "syscall.h"
+#include "thread.h"
 
 #undef NULL
 #define NULL ((void*)0)
@@ -39,9 +40,7 @@ main(int argc, char *argv[])
 
 void
 worker(void *arg_ptr) {
-   printf(1, "Enter thread\n");
    assert((uint)&arg_ptr == ((uint)arg_ptr + PGSIZE - 4));
-   printf(1, "This should be an address %x\n", (arg_ptr + PGSIZE - 8));
    assert(*((uint*) (arg_ptr + PGSIZE - 8)) == 0xffffffff);
    global = 5;
    exit();

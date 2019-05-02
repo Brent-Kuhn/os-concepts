@@ -32,8 +32,15 @@ main(int argc, char *argv[])
 
    void *join_stack;
    int join_pid = join(&join_stack);
-   printf(1,"%s: join_pid = %d\n", __func__, join_pid);
    assert(join_pid == -1);
+
+   if(fork_pid == 0) {
+      exit();
+   }
+
+   else{
+      wait();
+   }
 
    printf(1, "TEST PASSED\n");
    exit();
