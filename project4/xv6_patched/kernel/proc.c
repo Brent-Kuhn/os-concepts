@@ -494,7 +494,7 @@ int clone(void(*fcn)(void*), void *arg, void *stack) {
   *np->tf = *proc->tf;
 
   // Use the given stack as the new process stack
-  np->kstack = stack;
+  np->ustack = stack;
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -573,14 +573,16 @@ int join(void **stack) {
         havekids = 1;
         if (p->state == ZOMBIE) {
           // get pid of zombie child to return
+          
           pid = p->pid;
-          *stack = p->kstack;
-          p->kstack = 0;
+          p->ustack = 0;
           p->state = UNUSED;
           p->pid = 0;
           p->parent = 0;
           p->name[0] = 0;
           p->killed = 0;
+          kfree(p->kstack);
+          p->kstack = 0;
           // Get stack of the zombie child thread to return
           release(&ptable.lock);
           return pid;
