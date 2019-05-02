@@ -33,18 +33,15 @@ main(int argc, char *argv[])
 
    int arg = 42;
    int clone_pid = clone(worker, &arg, stack);
-   printf(1,"%s: clone_pid = %d\n", __func__, clone_pid);
    assert(clone_pid > 0);
 
-   sleep(1);
+   sleep(250);
    assert(wait() == -1);
 
    void *join_stack;
    int join_pid = join(&join_stack);
-   printf(1,"%s: clone_pid = %d, join_pid = %d\n", __func__, clone_pid, join_pid);
    assert(join_pid == clone_pid);
    assert(stack == join_stack);
-   printf(1,"%s: global = %d\n", __func__, global);
    assert(global == 2);
 
    printf(1, "TEST PASSED\n");

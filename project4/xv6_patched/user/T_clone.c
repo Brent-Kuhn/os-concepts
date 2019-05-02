@@ -24,24 +24,22 @@ void worker(void *arg_ptr);
 int
 main(int argc, char *argv[])
 {
-    ppid = getpid();
-    void *stack = malloc(PGSIZE*2);
-    assert(stack != NULL);
-    if((uint)stack % PGSIZE)
-        stack = stack + (4096 - (uint)stack % PGSIZE);
+   ppid = getpid();
+   void *stack = malloc(PGSIZE*2);
+   assert(stack != NULL);
+   if((uint)stack % PGSIZE)
+     stack = stack + (4096 - (uint)stack % PGSIZE);
 
-    int clone_pid = clone(worker, 0, stack);
-    assert(clone_pid > 0);
-    while(global != 5);
-    printf(1, "TEST PASSED\n");
-    printf(1, "stack = %d\n", stack);
-
-    exit();
+   int clone_pid = clone(worker, 0, stack);
+   assert(clone_pid > 0);
+   while(global != 5);
+   printf(1, "TEST PASSED\n");
+   exit();
 }
 
 void
 worker(void *arg_ptr) {
-    assert(global == 1);
-    global = 5;
-    exit();
+   assert(global == 1);
+   global = 5;
+   exit();
 }

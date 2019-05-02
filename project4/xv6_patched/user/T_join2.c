@@ -30,20 +30,16 @@ main(int argc, char *argv[])
    assert(stack != NULL);
    if((uint)stack % PGSIZE)
      stack = stack + (4096 - (uint)stack % PGSIZE);
-   printf(1, "%s: stack = %d\n", __func__, stack);
 
    int arg = 42;
    int clone_pid = clone(worker, &arg, stack);
-   printf(1,"%s: clone_pid = %d\n", __func__, clone_pid);
    assert(clone_pid > 0);
 
-   printf(1, "%s: sbrk(PGSIZE) = %d\n", __func__, sbrk(PGSIZE));
+   sbrk(PGSIZE);
    void **join_stack = (void**) ((uint)sbrk(0) - 4);
-   printf(1, "%s: join_stack = %d\n", __func__, join_stack);
    assert(join((void**)((uint)join_stack + 2)) == -1);
    assert(join(join_stack) == clone_pid);
    assert(stack == *join_stack);
-   printf(1,"%s: global = %d\n", __func__, global);
    assert(global == 2);
 
    printf(1, "TEST PASSED\n");

@@ -37,10 +37,8 @@ main(int argc, char *argv[])
 
    void *join_stack;
    int join_pid = join(&join_stack);
-   printf(1,"%s: clone_pid = %d, join_pid = %d\n", __func__, clone_pid, join_pid);
    assert(join_pid == clone_pid);
    assert(stack == join_stack);
-   printf(1,"%s: global = %d\n", __func__, global);
    assert(global == 2);
 
    printf(1, "TEST PASSED\n");
